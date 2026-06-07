@@ -383,8 +383,11 @@ namespace xiloader
                 {
                     menus::enterCredentialsWithOTP(globals::g_Username, globals::g_Password, globals::g_OtpCode, &globals::g_TrustThisComputer, globals::g_ServerAddress);
 
-                    // Load trust token for this server+user combination
-                    globals::g_TrustToken = loadTrustToken(globals::g_ServerAddress, globals::g_Username);
+                    // Load from disk unless a token was already injected (launcher JSON).
+                    if (globals::g_TrustToken.empty())
+                    {
+                        globals::g_TrustToken = loadTrustToken(globals::g_ServerAddress, globals::g_Username);
+                    }
 
                     command = 0x10; // login
                     break;
@@ -481,8 +484,11 @@ namespace xiloader
             command               = 0x10;
             globals::g_FirstLogin = false;
 
-            // Load trust token for autologin
-            globals::g_TrustToken = loadTrustToken(globals::g_ServerAddress, globals::g_Username);
+            // Load from disk unless a token was already injected (launcher JSON).
+            if (globals::g_TrustToken.empty())
+            {
+                globals::g_TrustToken = loadTrustToken(globals::g_ServerAddress, globals::g_Username);
+            }
         }
 
         json login_json;
@@ -526,7 +532,7 @@ namespace xiloader
 
         bool retval = false;
 
-        std::string errorMessage = jsonGet<std::string>(login_reply_json, "error_message").value_or({}); // {} = empty string
+        std::string errorMessage = jsonGet<std::string>(login_reply_json, "error_message").value_or(std::string{}); // empty string
 
         if (errorMessage.empty())
         {
