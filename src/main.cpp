@@ -598,11 +598,14 @@ int __cdecl main(int argc, char* argv[])
                 globals::g_OtpCode = jsonGet<std::string>(jsonData, "otp").value_or(globals::g_OtpCode);
                 globals::g_Email   = jsonGet<std::string>(jsonData, "email").value_or(globals::g_Email);
 
+                // Launcher-injected trust token; sent in place of an OTP, wins over disk.
+                globals::g_TrustToken = jsonGet<std::string>(jsonData, "trust_token").value_or(globals::g_TrustToken);
+
                 bUseHairpinFix               = jsonGet<bool>(jsonData, "hairpin").value_or(bUseHairpinFix);
                 globals::g_Hide              = jsonGet<bool>(jsonData, "hide").value_or(globals::g_Hide);
                 globals::g_TrustThisComputer = jsonGet<bool>(jsonData, "trust_this_computer").value_or(globals::g_TrustThisComputer);
 
-                std::string language = jsonGet<std::string>(jsonData, "language").value_or({});
+                std::string language = jsonGet<std::string>(jsonData, "language").value_or(std::string{});
 
                 setLanguage(language);
             }
