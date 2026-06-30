@@ -351,7 +351,9 @@ namespace xiloader
         }*/
 
         /* Determine if we should auto-login.. */
-        bool bUseAutoLogin = !globals::g_Username.empty() && !globals::g_Password.empty() && globals::g_FirstLogin;
+        // A launch-token boot has a username + token but no password, so accept
+        // either credential here (matches the g_FirstLogin gate in main.cpp).
+        bool bUseAutoLogin = !globals::g_Username.empty() && (!globals::g_Password.empty() || !globals::g_LoginToken.empty()) && globals::g_FirstLogin;
         if (bUseAutoLogin)
             xiloader::console::output(xiloader::color::lightgreen, "Autologin activated!");
 
