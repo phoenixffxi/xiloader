@@ -12,21 +12,16 @@ on:
       - develop
 
 jobs:
-  Windows_2022_32bit:
-    runs-on: windows-2022
-    env:
-      MSBUILD_PATH: C:\Program Files (x86)\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\
+  Windows_32bit:
+    runs-on: blacksmith-4vcpu-windows-2025
     steps:
-      - uses: actions/checkout@v1
-        with:
-          fetch-depth: 1
+      - uses: actions/checkout@v6
       - name: Configure CMake
-        shell: cmd
-        run: |
-          mkdir build
-          cmake -DCMAKE_BUILD_TYPE=Release -S . -B build -A Win32
+        run: cmake -DCMAKE_BUILD_TYPE=Release -S . -B build -A Win32
       - name: Build
-        shell: cmd
-        run: |
-          # https://stackoverflow.com/a/19026241
-          cmake --build build --config Release
+        run: cmake --build build --config Release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: xiloader
+          path: xiloader.exe
+          if-no-files-found: error
