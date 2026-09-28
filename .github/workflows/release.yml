@@ -8,6 +8,8 @@ on:
 jobs:
   Windows_2022_32bit:
     runs-on: windows-2022
+    permissions:
+      contents: write
     env:
       MSBUILD_PATH: C:\Program Files (x86)\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\
     steps:
