@@ -54,6 +54,12 @@ struct Request
     std::string  newPassword;
 };
 
+// [Phoenix] A launch token stands in for the password, so either one allows autologin
+auto hasCredentials(const Config& config) -> bool
+{
+    return !config.username.empty() && (!config.password.empty() || !config.loginToken.empty());
+}
+
 auto selectAction(Menu& menu) -> MenuSelection
 {
     auto selected = MenuSelection::None;
@@ -78,9 +84,10 @@ auto selectAction(Menu& menu) -> MenuSelection
 // Asks for what the selected action needs. Returns nothing when there is no request to send.
 auto promptRequest(const MenuSelection selected, Config& config, Menu& menu, const TrustTokenManager& trustTokens) -> std::optional<Request>
 {
-    config.username = "";
-    config.password = "";
-    config.otpCode  = "";
+    config.username   = "";
+    config.password   = "";
+    config.otpCode    = "";
+    config.loginToken = ""; // [Phoenix] the launch token is only for the launcher's autologin
 
     switch (selected)
     {
@@ -178,6 +185,12 @@ auto toJson(const Request& request, const Config& config, const TrustTokenManage
     if (request.command == LoginCommand::Login) // Only send trust fields for login
     {
         trustTokens.addToLoginRequest(login_json, config.username, config.trustThisComputer);
+
+        // [Phoenix] xi_connect consumes the launch token in place of password + OTP
+        if (!config.loginToken.empty())
+        {
+            login_json["login_token"] = config.loginToken;
+        }
     }
 
     return login_json;
@@ -322,6 +335,15 @@ auto handleReply(const std::string& text, Session& session, Config& config, cons
             xiloader::console::output(xiloader::color::error, "==========================================================");
             break;
         }
+        case LoginResult::LaunchTokenInvalid: // [Phoenix] Launch Token
+        {
+            config.loginToken.clear();
+            xiloader::console::output(xiloader::color::error, "==========================================================");
+            xiloader::console::output(xiloader::color::error, "Launch token invalid or expired (session expired).");
+            xiloader::console::output(xiloader::color::error, "Please log in again from the launcher.");
+            xiloader::console::output(xiloader::color::error, "==========================================================");
+            break;
+        }
         case LoginResult::CreateTotpSuccess:
         {
             onCreateTotpSuccess(reply, menu);
@@ -355,7 +377,7 @@ auto attempt(AuthConnection& connection, Session& session, Config& config, bool&
     std::optional<Request> request;
 
     // Determine if we should auto-login..
-    if (!config.username.empty() && !config.password.empty() && autoLogin)
+    if (hasCredentials(config) && autoLogin)
     {
         xiloader::console::output(xiloader::color::lightgreen, "Autologin activated!");
         autoLogin = false;
@@ -400,7 +422,7 @@ auto run(AuthConnection& connection, Config& config) -> std::expected<Session, L
     const auto              menu = xiloader::ui::makeMenu(config.plainMenus);
 
     // Credentials supplied up front are tried once before the menu shows
-    bool autoLogin = !config.username.empty() && !config.password.empty();
+    bool autoLogin = hasCredentials(config);
 
     Session session;
     auto    outcome = LoginOutcome::Retry;

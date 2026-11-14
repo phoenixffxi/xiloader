@@ -122,6 +122,7 @@ auto applyJsonFile(Config& config, const std::string& filename) -> std::expected
     check(read(data, "server", config.serverAddress));
     check(read(data, "username", config.username));
     check(read(data, "password", config.password));
+    check(read(data, "login_token", config.loginToken)); // [Phoenix] Launch Token
     check(read(data, "fingerprint", config.fingerprint));
     check(read(data, "hairpin", config.hairpin));
     check(read(data, "hide", config.hide));

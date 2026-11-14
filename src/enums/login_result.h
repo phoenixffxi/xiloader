@@ -40,6 +40,7 @@ enum class LoginResult : int8_t
     VerifyTotpSuccess     = 0x11,
     RemoveTotpSuccess     = 0x12,
     TrustTokenInvalid     = 0x13,
+    LaunchTokenInvalid    = 0x14, // [Phoenix] Launch Token
 };
 
 } // namespace xiloader

@@ -165,6 +165,11 @@ void checkConfig()
     assert(both.serverAddress == "b.example" && both.loginAuthPort == 2000 && both.loginDataPort == 1001);
     assert(both.language == Language::European && both.hairpin && both.username == "u");
 
+    // [Phoenix] Launch Token
+    const auto tokenFile = writeJson("xiloader_check_token.json", R"({"username":"u","login_token":"abc"})");
+    assert(loadConfig({ "--json", tokenFile.c_str() }).loginToken == "abc");
+    assert(rejects({ "--json", writeJson("xiloader_check_bad5.json", R"({"login_token":5})").c_str() }));
+
     assert(loadConfig({ "--otp", "012345" }).otpCode == "012345");
     assert(loadConfig({ "--lang", "0" }).language == Language::Japanese);
     assert(loadConfig({ "--email", "ignored@example.com" }).username.empty());
